@@ -253,7 +253,7 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        for (var endIndex = 0; endIndex < str.Length; endIndex += maxLength + 1)
+        for (int endIndex = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
         {
             if (!char.IsAsciiLetter(str[endIndex]))
                 continue;
@@ -272,7 +272,7 @@ internal static class FindLongestWordLength
                 startIndex++;
 
             // Can IndexOf be faster here?
-            while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
 
             maxLength = endIndex - startIndex;
 
@@ -287,7 +287,7 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        for (int endIndex = 0, checkedLen = 0; endIndex < str.Length; endIndex += maxLength + 1)
+        for (int endIndex = 0, checkedLen = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
         {
             if (!char.IsAsciiLetter(str[endIndex]))
             {
@@ -309,7 +309,7 @@ internal static class FindLongestWordLength
             //Console.WriteLine($"checkedLen = {checkedLen}");
 
             // Can IndexOf be faster here?
-            while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
 
             maxLength = endIndex - startIndex + checkedLen;
             checkedLen = 0;

@@ -11,7 +11,7 @@ public class LongestWordLengthBench
 {
     #region Params
 
-    public int Seed = 189206201;
+    private const int Seed = 189206201;
 
     [Params(1, 10, 100, 1_000, 10_000, 100_000)]
     //[Params(100_000)]
@@ -29,7 +29,7 @@ public class LongestWordLengthBench
     {
         Console.WriteLine("GlobalSetup start");
 
-        var seed = unchecked(Seed + WordsCount);
+        var seed = unchecked(Seed + WordsCount + (int)(DateTime.Now.Ticks / TimeSpan.TicksPerDay));
         Randomizer.Seed = new Random(seed);
         Console.WriteLine($"Seed = {seed:N0}");
 
@@ -98,7 +98,7 @@ public class LongestWordLengthBench
                 $"{nameof(Split_Loop)} return {result} should {LongestWord}");
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void MemorySplit()
     {
         var result = FindLongestWordLength.MemorySplit(Words);
@@ -152,7 +152,7 @@ public class LongestWordLengthBench
                 $"{nameof(ThreeLoops)} return {result} should {LongestWord}");
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void TwoLoops()
     {
         var result = FindLongestWordLength.TwoLoops(Words);
