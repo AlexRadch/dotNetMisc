@@ -309,12 +309,13 @@ internal static class FindLongestWordLength
                     goto Continue;
                 }
             }
+            //Console.WriteLine($"checkedLen = {checkedLen - startIndex}");
+            checkedLen = 0;
 
             // Can IndexOf be faster here?
             while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
 
             maxLength = endIndex - startIndex;
-            checkedLen = 0;
 
         Continue:
             ;
