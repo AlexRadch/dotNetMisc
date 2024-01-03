@@ -116,6 +116,43 @@ internal static class FindLongestWordLength
         return;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int NextMaxLength(string str, ref int startIndex, int maxLength)
+    {
+        var nextIndex = startIndex + maxLength + 1;
+        while (nextIndex < str.Length)
+        {
+            if (!char.IsAsciiLetter(str[nextIndex]))
+            {
+                startIndex = nextIndex + 1;
+                goto Continue;
+            }
+
+            for (var newStartIndex = nextIndex - 1; newStartIndex >= startIndex; newStartIndex--)
+            {
+                if (!char.IsAsciiLetter(str[newStartIndex]))
+                {
+                    startIndex = newStartIndex + 1;
+                    goto Continue;
+                }
+            }
+
+            do
+            {
+                nextIndex++;
+            }
+            while (char.IsAsciiLetter(str[nextIndex]));
+
+            startIndex = nextIndex;
+            return maxLength;
+
+        Continue:
+            nextIndex = startIndex + maxLength + 1;
+        }
+        startIndex = nextIndex;
+        return maxLength;
+    }
+
     #endregion
 
     #region Seq2Loops
@@ -207,6 +244,41 @@ internal static class FindLongestWordLength
                 startIndex = endIndex;
             }
             startIndex++;
+        }
+
+        return maxLength;
+    }
+
+    public static int FastTwoLoops(string str)
+    {
+        var maxLength = 0;
+
+        for (int startIndex = 0, endIndex = 0; endIndex < str.Length;
+            startIndex = ++endIndex, 
+            endIndex += maxLength)
+        {
+            if (!char.IsAsciiLetter(str[endIndex]))
+                continue;
+
+            // Can IndexOf be faster here?
+            for (var breakIndex = endIndex - 1; breakIndex > startIndex; breakIndex--)
+            {
+                if (!char.IsAsciiLetter(str[breakIndex]))
+                {
+                    endIndex = breakIndex;
+                    goto Continue;
+                }
+            }
+            if (!char.IsAsciiLetter(str[startIndex]))
+                startIndex++;
+
+            // Can IndexOf be faster here?
+            while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+
+            maxLength = endIndex - startIndex;
+
+        Continue:
+            ;
         }
 
         return maxLength;

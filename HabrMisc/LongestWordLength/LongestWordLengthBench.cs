@@ -161,6 +161,15 @@ public class LongestWordLengthBench
                 $"{nameof(TwoLoops)} return {result} should {LongestWord}");
     }
 
+    [Benchmark]
+    public void FastTwoLoops()
+    {
+        var result = FindLongestWordLength.FastTwoLoops(Words);
+        if (result != LongestWord)
+            throw new InvalidOperationException(
+                $"{nameof(FastTwoLoops)} return {result} should {LongestWord}");
+    }
+
     //[Benchmark]
     public void TwoLoopsSVContains()
     {
