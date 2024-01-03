@@ -253,14 +253,13 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        for (int startIndex = 0, endIndex = 0; endIndex < str.Length;
-            startIndex = ++endIndex, 
-            endIndex += maxLength)
+        for (var endIndex = 0; endIndex < str.Length; endIndex += maxLength + 1)
         {
             if (!char.IsAsciiLetter(str[endIndex]))
                 continue;
 
             // Can IndexOf be faster here?
+            var startIndex = endIndex - maxLength;
             for (var breakIndex = endIndex - 1; breakIndex > startIndex; breakIndex--)
             {
                 if (!char.IsAsciiLetter(str[breakIndex]))
@@ -288,9 +287,7 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        for (int startIndex = 0, endIndex = 0, checkedLen = 0; endIndex < str.Length;
-            startIndex = ++endIndex,
-            endIndex += maxLength)
+        for (int endIndex = 0, checkedLen = 0; endIndex < str.Length; endIndex += maxLength + 1)
         {
             if (!char.IsAsciiLetter(str[endIndex]))
             {
@@ -299,8 +296,8 @@ internal static class FindLongestWordLength
             }
 
             // Can IndexOf be faster here?
-            checkedLen += startIndex;
-            for (var breakIndex = endIndex - 1; breakIndex >= checkedLen; breakIndex--)
+            var startIndex = endIndex - maxLength + checkedLen;
+            for (var breakIndex = endIndex - 1; breakIndex >= startIndex; breakIndex--)
             {
                 if (!char.IsAsciiLetter(str[breakIndex]))
                 {
@@ -309,13 +306,13 @@ internal static class FindLongestWordLength
                     goto Continue;
                 }
             }
-            //Console.WriteLine($"checkedLen = {checkedLen - startIndex}");
-            checkedLen = 0;
+            //Console.WriteLine($"checkedLen = {checkedLen}");
 
             // Can IndexOf be faster here?
             while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
 
-            maxLength = endIndex - startIndex;
+            maxLength = endIndex - startIndex + checkedLen;
+            checkedLen = 0;
 
         Continue:
             ;
