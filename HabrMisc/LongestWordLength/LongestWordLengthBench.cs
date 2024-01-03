@@ -162,12 +162,21 @@ public class LongestWordLengthBench
     }
 
     [Benchmark]
-    public void FastTwoLoops()
+    public void TwoLoops1Jump()
     {
-        var result = FindLongestWordLength.FastTwoLoops(Words);
+        var result = FindLongestWordLength.TwoLoops1Jump(Words);
         if (result != LongestWord)
             throw new InvalidOperationException(
-                $"{nameof(FastTwoLoops)} return {result} should {LongestWord}");
+                $"{nameof(TwoLoops1Jump)} return {result} should {LongestWord}");
+    }
+
+    //[Benchmark]
+    public void TwoLoops2Jumps()
+    {
+        var result = FindLongestWordLength.TwoLoops2Jumps(Words);
+        if (result != LongestWord)
+            throw new InvalidOperationException(
+                $"{nameof(TwoLoops2Jumps)} return {result} should {LongestWord}");
     }
 
     //[Benchmark]

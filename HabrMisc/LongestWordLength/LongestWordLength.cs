@@ -249,7 +249,7 @@ internal static class FindLongestWordLength
         return maxLength;
     }
 
-    public static int FastTwoLoops(string str)
+    public static int TwoLoops1Jump(string str)
     {
         var maxLength = 0;
 
@@ -276,6 +276,45 @@ internal static class FindLongestWordLength
             while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
 
             maxLength = endIndex - startIndex;
+
+        Continue:
+            ;
+        }
+
+        return maxLength;
+    }
+
+    public static int TwoLoops2Jumps(string str)
+    {
+        var maxLength = 0;
+
+        for (int startIndex = 0, endIndex = 0, checkedLen = 0; endIndex < str.Length;
+            startIndex = ++endIndex,
+            endIndex += maxLength)
+        {
+            if (!char.IsAsciiLetter(str[endIndex]))
+            {
+                checkedLen = 0;
+                continue;
+            }
+
+            // Can IndexOf be faster here?
+            checkedLen += startIndex;
+            for (var breakIndex = endIndex - 1; breakIndex >= checkedLen; breakIndex--)
+            {
+                if (!char.IsAsciiLetter(str[breakIndex]))
+                {
+                    checkedLen = endIndex - breakIndex;
+                    endIndex = breakIndex;
+                    goto Continue;
+                }
+            }
+
+            // Can IndexOf be faster here?
+            while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+
+            maxLength = endIndex - startIndex;
+            checkedLen = 0;
 
         Continue:
             ;
