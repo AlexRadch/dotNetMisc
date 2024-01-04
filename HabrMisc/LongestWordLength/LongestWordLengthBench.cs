@@ -34,6 +34,7 @@ public class LongestWordLengthBench
         Console.WriteLine($"Seed = {seed:N0}");
 
         var sentences = new StringBuilder();
+        var sentenceSeparator = new string(' ', 100);
         var lorem = new Bogus.DataSets.Lorem();
         var count = 0;
         while (count < WordsCount)
@@ -47,7 +48,7 @@ public class LongestWordLengthBench
             }
 
             sentences.Append(sentence);
-            sentences.Append("   ");
+            sentences.Append(sentenceSeparator);
             count += sentenceCount;
         }
         Words = sentences.ToString();
@@ -152,7 +153,7 @@ public class LongestWordLengthBench
                 $"{nameof(ThreeLoops)} return {result} should {LongestWord}");
     }
 
-    //[Benchmark]
+    [Benchmark]
     public void TwoLoops()
     {
         var result = FindLongestWordLength.TwoLoops(Words);
@@ -214,4 +215,23 @@ public class LongestWordLengthBench
             throw new InvalidOperationException(
                 $"{nameof(ThreeLoopsIndexOfSV_Inlined)} return {result} should {LongestWord}");
     }
+
+    [Benchmark]
+    public void Jump()
+    {
+        var result = FindLongestWordLength.Jump(Words);
+        if (result != LongestWord)
+            throw new InvalidOperationException(
+                $"{nameof(Jump)} return {result} should {LongestWord}");
+    }
+
+    [Benchmark]
+    public void JumpNew()
+    {
+        var result = FindLongestWordLength.JumpNew(Words);
+        if (result != LongestWord)
+            throw new InvalidOperationException(
+                $"{nameof(JumpNew)} return {result} should {LongestWord}");
+    }
+
 }

@@ -5,7 +5,7 @@ using BenchmarkDotNet.Running;
 
 var config = ManualConfig.Create(DefaultConfig.Instance)
 //var config = new DebugInProcessConfig()
-    .WithOption(ConfigOptions.JoinSummary, true)
+    //.WithOption(ConfigOptions.JoinSummary, true)
     .WithOption(ConfigOptions.StopOnFirstError, true)
     ;
 

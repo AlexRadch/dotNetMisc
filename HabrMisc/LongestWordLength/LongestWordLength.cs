@@ -424,5 +424,74 @@ internal static class FindLongestWordLength
     }
 
     #endregion
+
+    #region Jump
+
+    public static int Jump(string str)
+    {
+        int maxLen = 0, //maxIndex = -1,
+            len = str.Length;
+        for (int i = 0; i < len - maxLen; i++)
+        {
+            if (char.IsAsciiLetter(str[i]))
+            {
+                int index = i;
+                i += maxLen;
+                if (i < len && char.IsAsciiLetter(str[i]))
+                {
+                    for (; i > index && char.IsAsciiLetter(str[i]); i--) ;
+                    if (i == index)
+                    {
+                        for (i += maxLen + 1; i < len && char.IsAsciiLetter(str[i]); i++) ;
+                        if (maxLen < (i - index))
+                        {
+                            //maxIndex = index;
+                            maxLen = i - index;
+                        }
+                    }
+                }
+            }
+        }
+        return maxLen;
+    }
+
+    public static int JumpNew(string str)
+    {
+        int maxLen = 0, //maxIndex = -1, 
+            tail = 0, len = str.Length;
+        for (int i = 0; i < str.Length - maxLen; i++)
+        {
+            if (char.IsAsciiLetter(str[i]))
+            {
+                int index = i;
+                i += maxLen;
+                if (i < len && char.IsAsciiLetter(str[i]))
+                {
+                    for (; i > (index + tail) && char.IsAsciiLetter(str[i]); i--) ;
+                    if (i == (index + tail))
+                    {
+                        for (i = index + maxLen + 1; i < len && char.IsAsciiLetter(str[i]); i++) ;
+                        if (maxLen < (i - index))
+                        {
+                            //maxIndex = index;
+                            maxLen = i - index;
+                        }
+                    }
+                    else
+                    {
+                        tail = index + maxLen - i - 1;
+                        continue;
+                    }
+                }
+            }
+            tail = 0;
+        }
+
+        return maxLen;
+    }
+
+
+
+    #endregion
 }
 
