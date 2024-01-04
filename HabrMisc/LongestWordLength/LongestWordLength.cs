@@ -429,25 +429,27 @@ internal static class FindLongestWordLength
 
     public static int Jump(string str)
     {
-        int maxLen = 0, //maxIndex = -1,
+        // Jump
+        int maxLen = 0, //maxIndex = -1, 
             len = str.Length;
         for (int i = 0; i < len - maxLen; i++)
         {
-            if (char.IsAsciiLetter(str[i]))
+            int index = i;
+            i += maxLen;
+            if (char.IsAsciiLetter(str[i]) && i < len)
             {
-                int index = i;
-                i += maxLen;
-                if (i < len && char.IsAsciiLetter(str[i]))
+                int k = maxLen > 0 ? 1 : 0;
+                do i -= k;
+                while (char.IsAsciiLetter(str[i]) && i > index);
+                if (i == index)
                 {
-                    for (; i > index && char.IsAsciiLetter(str[i]); i--) ;
-                    if (i == index)
+                    i += maxLen;
+                    do i++;
+                    while (char.IsAsciiLetter(str[i]) && i < len);
+                    if (maxLen < (i - index))
                     {
-                        for (i += maxLen + 1; i < len && char.IsAsciiLetter(str[i]); i++) ;
-                        if (maxLen < (i - index))
-                        {
-                            //maxIndex = index;
-                            maxLen = i - index;
-                        }
+                        //maxIndex = index;
+                        maxLen = i - index;
                     }
                 }
             }
@@ -457,36 +459,36 @@ internal static class FindLongestWordLength
 
     public static int JumpNew(string str)
     {
-        int maxLen = 0, //maxIndex = -1, 
+        int maxLen = 0, //maxIndex = -1,
             tail = 0, len = str.Length;
-        for (int i = 0; i < str.Length - maxLen; i++)
+        for (int i = 0; i < len - maxLen; i++)
         {
-            if (char.IsAsciiLetter(str[i]))
+            int index = i;
+            i += maxLen;
+            if (char.IsAsciiLetter(str[i]) && i < len)
             {
-                int index = i;
-                i += maxLen;
-                if (i < len && char.IsAsciiLetter(str[i]))
+                int k = maxLen > 0 ? 1 : 0;
+                do i -= k;
+                while (char.IsAsciiLetter(str[i]) && i > (index + tail));
+                if (i == (index + tail))
                 {
-                    for (; i > (index + tail) && char.IsAsciiLetter(str[i]); i--) ;
-                    if (i == (index + tail))
+                    i = index + maxLen;
+                    do i++;
+                    while (char.IsAsciiLetter(str[i]) && i < len);
+                    if (maxLen < (i - index))
                     {
-                        for (i = index + maxLen + 1; i < len && char.IsAsciiLetter(str[i]); i++) ;
-                        if (maxLen < (i - index))
-                        {
-                            //maxIndex = index;
-                            maxLen = i - index;
-                        }
+                        //maxIndex = index;
+                        maxLen = i - index;
                     }
-                    else
-                    {
-                        tail = index + maxLen - i - 1;
-                        continue;
-                    }
+                }
+                else
+                {
+                    tail = index + maxLen - i - 1;
+                    continue;
                 }
             }
             tail = 0;
         }
-
         return maxLen;
     }
 
