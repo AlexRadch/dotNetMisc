@@ -39,11 +39,11 @@ public partial class LongestWordLengthBench
         while (wordsCount < WordsCount)
         {
             var sentence = lorem.Sentence();
-            var sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Length;
+            var sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
             if (sentenceWordsCount > WordsCount - wordsCount)
             {
                 sentence = lorem.Sentence(WordsCount - wordsCount);
-                sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Length;
+                sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
             }
 
             sentences.Append(sentence);
@@ -54,7 +54,8 @@ public partial class LongestWordLengthBench
         LongestWordLength = RegexNotAsciiLetters().Split(Words).Max(word => word.Length);
 
         //Console.WriteLine(Words);
-        //Console.WriteLine(LongestWord);
+        Console.WriteLine($"WordsCount = {wordsCount} should {WordsCount}");
+        Console.WriteLine($"LongestWordLength = {LongestWordLength}");
         //Console.WriteLine();
         //Console.WriteLine();
 
