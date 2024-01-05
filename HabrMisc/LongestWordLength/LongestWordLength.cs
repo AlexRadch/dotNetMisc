@@ -306,13 +306,74 @@ internal static class FindLongestWordLength
                     goto Continue;
                 }
             }
-            //Console.WriteLine($"checkedLen = {checkedLen}");
+            //Console.WriteLine($"checkedLen = {checkedLen} used!!!!");
 
             // Can IndexOf be faster here?
             while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
 
             maxLength = endIndex - startIndex + checkedLen;
             checkedLen = 0;
+
+        Continue:
+            ;
+        }
+
+        return maxLength;
+    }
+
+    public static int FourLoops2Jumps(string str)
+    {
+        var maxLength = 0;
+
+        for (int endIndex = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
+        {
+            if (!char.IsAsciiLetter(str[endIndex]))
+                continue;
+
+            // Can IndexOf be faster here?
+            var startIndex = endIndex - maxLength;
+            for (var breakIndex = endIndex - 1; breakIndex > startIndex; breakIndex--)
+            {
+                if (char.IsAsciiLetter(str[breakIndex]))
+                    continue;
+
+            CheckedLoop:
+                //Console.WriteLine($"checkedLen = {endIndex - breakIndex}");
+                var endIndex2 = breakIndex + maxLength + 1;
+                if (endIndex2 >= len)
+                    return maxLength;
+                if (!char.IsAsciiLetter(str[endIndex2]))
+                {
+                    endIndex = endIndex2;
+                    goto Continue;
+                }
+
+                // Can IndexOf be faster here?
+                for (var breakIndex2 = endIndex2 - 1; breakIndex2 > endIndex; breakIndex2--)
+                {
+                    if (!char.IsAsciiLetter(str[breakIndex2]))
+                    {
+                        breakIndex = breakIndex2;
+                        endIndex = endIndex2;
+                        goto CheckedLoop;
+                    }
+                }
+                //Console.WriteLine($"checkedLen = {endIndex - breakIndex} used!!!!");
+
+                // Can IndexOf be faster here?
+                while (++endIndex2 < len && char.IsAsciiLetter(str[endIndex2])) ;
+
+                maxLength = endIndex2 - breakIndex - 1;
+                endIndex = endIndex2;
+                goto Continue;
+            }
+            if (!char.IsAsciiLetter(str[startIndex]))
+                startIndex++;
+
+            // Can IndexOf be faster here?
+            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
+
+            maxLength = endIndex - startIndex;
 
         Continue:
             ;
@@ -344,7 +405,7 @@ internal static class FindLongestWordLength
         var startIndex = span.IndexOfAny(AsciiLetters);
         if (startIndex < 0)
         {
-            span = ReadOnlySpan<char>.Empty;
+            span = [];
             endIndex = 0;
         }
         else
@@ -381,7 +442,7 @@ internal static class FindLongestWordLength
         var startIndex = span.IndexOfAny(AsciiLettersSearchValues);
         if (startIndex < 0)
         {
-            span = ReadOnlySpan<char>.Empty;
+            span = [];
             endIndex = 0;
         }
         else

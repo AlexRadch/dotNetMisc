@@ -1,13 +1,12 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Bogus;
-using Microsoft.Diagnostics.Runtime.Utilities;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace LongestWordLength;
 
 [MemoryDiagnoser]
-public class LongestWordLengthBench
+public partial class LongestWordLengthBench
 {
     #region Params
 
@@ -36,23 +35,23 @@ public class LongestWordLengthBench
         var sentences = new StringBuilder();
         var sentenceSeparator = new string(' ', 100);
         var lorem = new Bogus.DataSets.Lorem();
-        var count = 0;
-        while (count < WordsCount)
+        var wordsCount = 0;
+        while (wordsCount < WordsCount)
         {
             var sentence = lorem.Sentence();
-            var sentenceCount = Regex.Split(sentence, "[^a-zA-Z]+").Length;
-            if (sentenceCount > WordsCount - count)
+            var sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Length;
+            if (sentenceWordsCount > WordsCount - wordsCount)
             {
-                sentence = lorem.Sentence(WordsCount - count);
-                sentenceCount = Regex.Split(sentence, "[^a-zA-Z]+").Length;
+                sentence = lorem.Sentence(WordsCount - wordsCount);
+                sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Length;
             }
 
             sentences.Append(sentence);
             sentences.Append(sentenceSeparator);
-            count += sentenceCount;
+            wordsCount += sentenceWordsCount;
         }
         Words = sentences.ToString();
-        LongestWordLength = Regex.Split(Words, "[^a-zA-Z]+").Max(word => word.Length);
+        LongestWordLength = RegexNotAsciiLetters().Split(Words).Max(word => word.Length);
 
         //Console.WriteLine(Words);
         //Console.WriteLine(LongestWord);
@@ -67,16 +66,6 @@ public class LongestWordLengthBench
     {
         Words = string.Empty;
         LongestWordLength = 0;
-    }
-
-    [IterationSetup]
-    public void IterationSetup()
-    {
-    }
-
-    [IterationCleanup]
-    public void IterationCleanup()
-    {
     }
 
     #endregion
@@ -181,6 +170,15 @@ public class LongestWordLengthBench
     }
 
     //[Benchmark]
+    public void FourLoops2Jumps()
+    {
+        var result = FindLongestWordLength.FourLoops2Jumps(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(FourLoops2Jumps)} return {result} should {LongestWordLength}");
+    }
+
+    //[Benchmark]
     public void TwoLoopsSVContains()
     {
         var result = FindLongestWordLength.TwoLoopsSVContains(Words);
@@ -216,7 +214,7 @@ public class LongestWordLengthBench
                 $"{nameof(ThreeLoopsIndexOfSV_Inlined)} return {result} should {LongestWordLength}");
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void Jump()
     {
         var result = FindLongestWordLength.Jump(Words);
@@ -225,7 +223,7 @@ public class LongestWordLengthBench
                 $"{nameof(Jump)} return {result} should {LongestWordLength}");
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void JumpNew()
     {
         var result = FindLongestWordLength.JumpNew(Words);
@@ -234,4 +232,6 @@ public class LongestWordLengthBench
                 $"{nameof(JumpNew)} return {result} should {LongestWordLength}");
     }
 
+    [GeneratedRegex("[^a-zA-Z]+")]
+    private static partial Regex RegexNotAsciiLetters();
 }
