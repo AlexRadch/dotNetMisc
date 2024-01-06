@@ -9,8 +9,8 @@ var config = ManualConfig.Create(DefaultConfig.Instance)
 //var config = new DebugInProcessConfig()
     //.WithOption(ConfigOptions.JoinSummary, true)
     .WithOption(ConfigOptions.StopOnFirstError, true)
-    .AddJob(Job.ShortRun
-        .WithIterationTime(TimeInterval.Millisecond * 100)
+    .AddJob(
+        Job.ShortRun.WithIterationTime(TimeInterval.Millisecond * 100)
         )
     ;
 

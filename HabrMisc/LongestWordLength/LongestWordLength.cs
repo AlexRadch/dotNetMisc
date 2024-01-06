@@ -209,19 +209,14 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        var startIndex = 0;
-        while (startIndex < str.Length)
+        for (var i = 0; i < str.Length; i++)
         {
-            if (char.IsAsciiLetter(str[startIndex]))
+            if (char.IsAsciiLetter(str[i]))
             {
-                //var endIndex = startIndex + 1;
-                //while (endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) endIndex++;
-                var endIndex = startIndex;
-                while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
-                maxLength = Math.Max(maxLength, endIndex - startIndex);
-                startIndex = endIndex;
+                var startIndex = i;
+                while (++i < str.Length && char.IsAsciiLetter(str[i])) ;
+                maxLength = Math.Max(maxLength, i - startIndex);
             }
-            startIndex++;
         }
 
         return maxLength;
@@ -231,91 +226,115 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        var startIndex = 0;
-        while (startIndex < str.Length)
+        for (var i = 0; i < str.Length; i++)
         {
-            if (AsciiLettersSearchValues.Contains(str[startIndex]))
+            if (AsciiLettersSearchValues.Contains(str[i]))
             {
-                //var endIndex = startIndex + 1;
-                //while (endIndex < str.Length && AsciiLettersSearchValues.Contains(str[endIndex])) endIndex++;
-                var endIndex = startIndex;
-                while (++endIndex < str.Length && AsciiLettersSearchValues.Contains(str[endIndex])) ;
-                maxLength = Math.Max(maxLength, endIndex - startIndex);
-                startIndex = endIndex;
+                var startIndex = i;
+                while (++i < str.Length && AsciiLettersSearchValues.Contains(str[i])) ;
+                maxLength = Math.Max(maxLength, i - startIndex);
             }
-            startIndex++;
         }
 
         return maxLength;
     }
 
-    public static int TwoLoops1Jump(string str)
+    public static int ThreeLoops1Jump(string str)
     {
         var maxLength = 0;
 
-        for (int endIndex = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
+        // Can IndexOf be faster here?
+        for (int i = 0, len = str.Length; i < len; i++)
         {
-            if (!char.IsAsciiLetter(str[endIndex]))
+            if (!char.IsAsciiLetter(str[i]))
                 continue;
 
+            int startIndex = i;
+
+        Found:
             // Can IndexOf be faster here?
-            var startIndex = endIndex - maxLength;
-            for (var breakIndex = endIndex - 1; breakIndex > startIndex; breakIndex--)
+            while (++i < len && char.IsAsciiLetter(str[i])) ;
+
+            maxLength = i - startIndex;
+
+            for (i += maxLength + 1; i < len; i += maxLength + 1)
             {
-                if (!char.IsAsciiLetter(str[breakIndex]))
+                if (!char.IsAsciiLetter(str[i]))
+                    continue;
+
+                // Can IndexOf be faster here?
+                startIndex = i - maxLength;
+                while (--i > startIndex)
                 {
-                    endIndex = breakIndex;
-                    goto Continue;
+                    if (!char.IsAsciiLetter(str[i]))
+                        goto Continue;
                 }
+                if (!char.IsAsciiLetter(str[startIndex]))
+                    startIndex++;
+                
+                i += maxLength;
+                goto Found;
+
+            Continue:
+                ;
             }
-            if (!char.IsAsciiLetter(str[startIndex]))
-                startIndex++;
 
-            // Can IndexOf be faster here?
-            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
-
-            maxLength = endIndex - startIndex;
-
-        Continue:
-            ;
+            break;
         }
 
         return maxLength;
     }
 
-    public static int TwoLoops2Jumps(string str)
+    public static int ThreeLoops2Jumps(string str)
     {
         var maxLength = 0;
 
-        for (int endIndex = 0, checkedLen = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
+        // Can IndexOf be faster here?
+        for (int i = 0, len = str.Length; i < len; i++)
         {
-            if (!char.IsAsciiLetter(str[endIndex]))
-            {
-                checkedLen = 0;
+            if (!char.IsAsciiLetter(str[i]))
                 continue;
-            }
 
+            int startIndex = i;
+
+        Found:
             // Can IndexOf be faster here?
-            var startIndex = endIndex - maxLength + checkedLen;
-            for (var breakIndex = endIndex - 1; breakIndex >= startIndex; breakIndex--)
+            while (++i < len && char.IsAsciiLetter(str[i])) ;
+
+            maxLength = i - startIndex;
+
+            int checkedIndex = ++i;
+            for (i += maxLength; i < len; i += maxLength)
             {
-                if (!char.IsAsciiLetter(str[breakIndex]))
+                if (!char.IsAsciiLetter(str[i]))
                 {
-                    checkedLen = endIndex - breakIndex;
-                    endIndex = breakIndex;
-                    goto Continue;
+                    checkedIndex = ++i;
+                    continue;
                 }
+
+                // Can IndexOf be faster here?
+                startIndex = i - maxLength;
+                var checkedIndex2 = i;
+                while (--i > checkedIndex)
+                {
+                    if (!char.IsAsciiLetter(str[i]))
+                    {
+                        checkedIndex = checkedIndex2;
+                        i++;
+                        goto Continue;
+                    }
+                }
+                i = startIndex + maxLength;
+                if (!char.IsAsciiLetter(str[startIndex]))
+                    startIndex++;
+
+                goto Found;
+
+            Continue:
+                ;
             }
-            //Console.WriteLine($"checkedLen = {checkedLen} used!!!!");
 
-            // Can IndexOf be faster here?
-            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
-
-            maxLength = endIndex - startIndex + checkedLen;
-            checkedLen = 0;
-
-        Continue:
-            ;
+            break;
         }
 
         return maxLength;
@@ -325,58 +344,130 @@ internal static class FindLongestWordLength
     {
         var maxLength = 0;
 
-        for (int endIndex = 0, len = str.Length; endIndex < len; endIndex += maxLength + 1)
+        for (int i = 0, len = str.Length; i < len; i += maxLength + 1)
         {
-            if (!char.IsAsciiLetter(str[endIndex]))
+            if (!char.IsAsciiLetter(str[i]))
                 continue;
 
             // Can IndexOf be faster here?
-            var startIndex = endIndex - maxLength;
-            for (var breakIndex = endIndex - 1; breakIndex > startIndex; breakIndex--)
+            var startIndex = i - maxLength;
+            var checkedIndex = i;
+            while (--i > startIndex)
             {
-                if (char.IsAsciiLetter(str[breakIndex]))
+                if (char.IsAsciiLetter(str[i]))
                     continue;
 
-            CheckedLoop:
-                //Console.WriteLine($"checkedLen = {endIndex - breakIndex}");
-                var endIndex2 = breakIndex + maxLength + 1;
-                if (endIndex2 >= len)
-                    return maxLength;
-                if (!char.IsAsciiLetter(str[endIndex2]))
+                for (i += maxLength + 1; i < len; i += maxLength + 1)
                 {
-                    endIndex = endIndex2;
-                    goto Continue;
-                }
+                    if (!char.IsAsciiLetter(str[i]))
+                        goto Continue;
 
-                // Can IndexOf be faster here?
-                for (var breakIndex2 = endIndex2 - 1; breakIndex2 > endIndex; breakIndex2--)
-                {
-                    if (!char.IsAsciiLetter(str[breakIndex2]))
+                    startIndex = i - maxLength;
+                    var checkedIndex2 = i;
+                    while (--i > checkedIndex)
                     {
-                        breakIndex = breakIndex2;
-                        endIndex = endIndex2;
-                        goto CheckedLoop;
+                        if (!char.IsAsciiLetter(str[i]))
+                        {
+                            checkedIndex = checkedIndex2;
+                            goto ContinueChecked;
+                        }
                     }
+
+                    i = startIndex;
+                    goto Found;
+
+                ContinueChecked:
+                    ;
                 }
-                //Console.WriteLine($"checkedLen = {endIndex - breakIndex} used!!!!");
 
-                // Can IndexOf be faster here?
-                while (++endIndex2 < len && char.IsAsciiLetter(str[endIndex2])) ;
-
-                maxLength = endIndex2 - breakIndex - 1;
-                endIndex = endIndex2;
-                goto Continue;
+                return maxLength;
             }
             if (!char.IsAsciiLetter(str[startIndex]))
+            {
                 startIndex++;
+            }
 
+
+        Found:
+            i += maxLength;
             // Can IndexOf be faster here?
-            while (++endIndex < len && char.IsAsciiLetter(str[endIndex])) ;
+            while (++i < len && char.IsAsciiLetter(str[i])) ;
 
-            maxLength = endIndex - startIndex;
+            maxLength = i - startIndex;
 
         Continue:
             ;
+        }
+
+        return maxLength;
+    }
+
+    public static int FiveLoops2Jumps(string str)
+    {
+        var maxLength = 0;
+
+        // Can IndexOf be faster here?
+        for (int i = 0, len = str.Length; i < len; i++)
+        {
+            if (!char.IsAsciiLetter(str[i]))
+                continue;
+
+            int startIndex = i;
+
+        Found:
+            // Can IndexOf be faster here?
+            while (++i < len && char.IsAsciiLetter(str[i])) ;
+
+            maxLength = i - startIndex;
+
+            for (i += maxLength + 1; i < len; i += maxLength + 1)
+            {
+                if (!char.IsAsciiLetter(str[i]))
+                    continue;
+
+                // Can IndexOf be faster here?
+                startIndex = i - maxLength;
+                var checkedIndex = i;
+                while (--i > startIndex)
+                {
+                    if (char.IsAsciiLetter(str[i]))
+                        continue;
+
+                    for (i += maxLength + 1; i < len; i += maxLength + 1)
+                    {
+                        if (!char.IsAsciiLetter(str[i]))
+                            goto Continue;
+
+                        // Can IndexOf be faster here?
+                        startIndex = i - maxLength;
+                        var checkedIndex2 = i;
+                        while (--i > checkedIndex)
+                        {
+                            if (!char.IsAsciiLetter(str[i]))
+                            {
+                                checkedIndex = checkedIndex2;
+                                goto ContinueChecked;
+                            }
+                        }
+                        i = startIndex + maxLength;
+                        goto Found;
+
+                    ContinueChecked:
+                        ;
+                    }
+
+                    return maxLength;
+                }
+                i = startIndex + maxLength;
+                if (!char.IsAsciiLetter(str[startIndex]))
+                    startIndex++;
+                goto Found;
+
+            Continue:
+                ;
+            }
+
+            return maxLength;
         }
 
         return maxLength;
@@ -557,4 +648,3 @@ internal static class FindLongestWordLength
 
     #endregion
 }
-

@@ -11,6 +11,8 @@ public partial class LongestWordLengthBench
     #region Params
 
     private const int Seed = 189206201;
+    private const int SentencesSeparatorLength = 1;
+    //private const int SentencesSeparatorLen = 100;
 
     [Params(1, 10, 100, 1_000, 10_000, 100_000)]
     //[Params(100_000)]
@@ -33,7 +35,7 @@ public partial class LongestWordLengthBench
         Console.WriteLine($"Seed = {seed:N0}");
 
         var sentences = new StringBuilder();
-        var sentenceSeparator = new string(' ', 100);
+        var sentenceSeparator = new string(' ', SentencesSeparatorLength);
         var lorem = new Bogus.DataSets.Lorem();
         var wordsCount = 0;
         while (wordsCount < WordsCount)
@@ -143,7 +145,7 @@ public partial class LongestWordLengthBench
                 $"{nameof(ThreeLoops)} return {result} should {LongestWordLength}");
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void TwoLoops()
     {
         var result = FindLongestWordLength.TwoLoops(Words);
@@ -153,30 +155,39 @@ public partial class LongestWordLengthBench
     }
 
     [Benchmark]
-    public void TwoLoops1Jump()
+    public void ThreeLoops1Jump()
     {
-        var result = FindLongestWordLength.TwoLoops1Jump(Words);
+        var result = FindLongestWordLength.ThreeLoops1Jump(Words);
         if (result != LongestWordLength)
             throw new InvalidOperationException(
-                $"{nameof(TwoLoops1Jump)} return {result} should {LongestWordLength}");
+                $"{nameof(ThreeLoops1Jump)} return {result} should {LongestWordLength}");
     }
 
     //[Benchmark]
-    public void TwoLoops2Jumps()
+    public void ThreeLoops2Jumps()
     {
-        var result = FindLongestWordLength.TwoLoops2Jumps(Words);
+        var result = FindLongestWordLength.ThreeLoops2Jumps(Words);
         if (result != LongestWordLength)
             throw new InvalidOperationException(
-                $"{nameof(TwoLoops2Jumps)} return {result} should {LongestWordLength}");
+                $"{nameof(ThreeLoops2Jumps)} return {result} should {LongestWordLength}");
     }
 
-    //[Benchmark]
+    //[Benchmark()]
     public void FourLoops2Jumps()
     {
         var result = FindLongestWordLength.FourLoops2Jumps(Words);
         if (result != LongestWordLength)
             throw new InvalidOperationException(
                 $"{nameof(FourLoops2Jumps)} return {result} should {LongestWordLength}");
+    }
+
+    [Benchmark(Baseline = true)]
+    public void FiveLoops2Jumps()
+    {
+        var result = FindLongestWordLength.FiveLoops2Jumps(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(FiveLoops2Jumps)} return {result} should {LongestWordLength}");
     }
 
     //[Benchmark]
