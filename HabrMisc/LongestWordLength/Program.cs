@@ -10,7 +10,7 @@ var config = ManualConfig.Create(DefaultConfig.Instance)
     //.WithOption(ConfigOptions.JoinSummary, true)
     .WithOption(ConfigOptions.StopOnFirstError, true)
     .AddJob(
-        Job.ShortRun.WithIterationTime(TimeInterval.Millisecond * 100)
+        Job.ShortRun.WithIterationTime(TimeInterval.Millisecond * 150)
         )
     ;
 

@@ -1,13 +1,16 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace LongestWordLength;
 
-internal static class FindLongestWordLength
+internal static partial class FindLongestWordLength
 {
-    internal static char[] SplitFastSeparators { get; } = [' ', '.', ','];
+    #region Static constants
 
-    internal static string AsciiLetters { get; } = string.Create(('Z' - 'A' + 1) * 2, 0,
+    private static char[] SplitFastSeparators { get; } = [' ', '.', ','];
+
+    private static string AsciiLetters { get; } = string.Create(('Z' - 'A' + 1) * 2, 0,
         (span, state) =>
         {
             for (var c = 'A'; c <= 'Z'; c++)
@@ -16,19 +19,33 @@ internal static class FindLongestWordLength
                 span[state++] = c;
         });
 
-    internal static SearchValues<char> AsciiLettersSearchValues { get; } = SearchValues.Create(AsciiLetters);
+    private static SearchValues<char> AsciiLettersSearchValues { get; } = SearchValues.Create(AsciiLetters);
+
+    #endregion
+
+    #region Split
 
     public static int Split_Linq(string str)
         => str.Split(SplitFastSeparators).Max(word => word.Length);
 
-    public static int Split_Loop(string str)
+    public static int Split_EachLoop(string str)
     {
-        var words = str.Split(SplitFastSeparators);
         var maxLength = 0;
+        foreach (var word in str.Split(SplitFastSeparators))
+            maxLength = Math.Max(maxLength, word.Length);
+        return maxLength;
+    }
+
+    public static int Split_ForLoop(string str)
+    {
+        var maxLength = 0;
+        var words = str.Split(SplitFastSeparators);
         for (var i = 0; i < words.Length; i++)
             maxLength = Math.Max(maxLength, words[i].Length);
         return maxLength;
     }
+
+    #endregion
 
     #region MemorySplit
 
@@ -188,6 +205,27 @@ internal static class FindLongestWordLength
 
     #endregion
 
+    #region SeqRegexMatch
+
+    public static int SeqRegexMatch_Linq(string str)
+        => SeqMatch(RegexAsciiWords().Match(str)).Max(match => match.Length);
+
+    public static int SeqRegexMatch_EachLoop(string str)
+    {
+        var maxLength = 0;
+        foreach (var match in SeqMatch(RegexAsciiWords().Match(str)))
+            maxLength = Math.Max(maxLength, match.Length);
+        return maxLength;
+    }
+
+    private static IEnumerable<Match> SeqMatch(Match match)
+    {
+        for (; match.Success; match = match.NextMatch())
+            yield return match;
+    }
+
+    #endregion
+
     public static int ThreeLoops(string str)
     {
         var maxLength = 0;
@@ -222,20 +260,11 @@ internal static class FindLongestWordLength
         return maxLength;
     }
 
-    public static int TwoLoopsSVContains(string str)
+    public static int RegexMatch_Loop(string str)
     {
         var maxLength = 0;
-
-        for (var i = 0; i < str.Length; i++)
-        {
-            if (AsciiLettersSearchValues.Contains(str[i]))
-            {
-                var startIndex = i;
-                while (++i < str.Length && AsciiLettersSearchValues.Contains(str[i])) ;
-                maxLength = Math.Max(maxLength, i - startIndex);
-            }
-        }
-
+        for (var match = RegexAsciiWords().Match(str); match.Success; match = match.NextMatch())
+            maxLength = Math.Max(maxLength, match.Length);
         return maxLength;
     }
 
@@ -473,6 +502,23 @@ internal static class FindLongestWordLength
         return maxLength;
     }
 
+    public static int TwoLoopsSVContains(string str)
+    {
+        var maxLength = 0;
+
+        for (var i = 0; i < str.Length; i++)
+        {
+            if (AsciiLettersSearchValues.Contains(str[i]))
+            {
+                var startIndex = i;
+                while (++i < str.Length && AsciiLettersSearchValues.Contains(str[i])) ;
+                maxLength = Math.Max(maxLength, i - startIndex);
+            }
+        }
+
+        return maxLength;
+    }
+
     #region ThreeLoopsIndexOf
 
     public static int ThreeLoopsIndexOf(string str)
@@ -644,7 +690,12 @@ internal static class FindLongestWordLength
         return maxLen;
     }
 
+    #endregion
 
+    #region Generated
+
+    [GeneratedRegex("[A-Za-z]+")]
+    private static partial Regex RegexAsciiWords();
 
     #endregion
 }

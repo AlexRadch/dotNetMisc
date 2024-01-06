@@ -41,11 +41,11 @@ public partial class LongestWordLengthBench
         while (wordsCount < WordsCount)
         {
             var sentence = lorem.Sentence();
-            var sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
+            var sentenceWordsCount = RegexNotAsciiWords().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
             if (sentenceWordsCount > WordsCount - wordsCount)
             {
                 sentence = lorem.Sentence(WordsCount - wordsCount);
-                sentenceWordsCount = RegexNotAsciiLetters().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
+                sentenceWordsCount = RegexNotAsciiWords().Split(sentence).Where(word => !string.IsNullOrWhiteSpace(word)).Count();
             }
 
             sentences.Append(sentence);
@@ -53,7 +53,7 @@ public partial class LongestWordLengthBench
             wordsCount += sentenceWordsCount;
         }
         Words = sentences.ToString();
-        LongestWordLength = RegexNotAsciiLetters().Split(Words).Max(word => word.Length);
+        LongestWordLength = RegexNotAsciiWords().Split(Words).Max(word => word.Length);
 
         //Console.WriteLine(Words);
         Console.WriteLine($"WordsCount = {wordsCount} should {WordsCount}");
@@ -83,12 +83,21 @@ public partial class LongestWordLengthBench
     }
 
     //[Benchmark]
-    public void Split_Loop()
+    public void Split_EachLoop()
     {
-        var result = FindLongestWordLength.Split_Loop(Words);
+        var result = FindLongestWordLength.Split_EachLoop(Words);
         if (result != LongestWordLength)
             throw new InvalidOperationException(
-                $"{nameof(Split_Loop)} return {result} should {LongestWordLength}");
+                $"{nameof(Split_EachLoop)} return {result} should {LongestWordLength}");
+    }
+
+    //[Benchmark]
+    public void Split_ForLoop()
+    {
+        var result = FindLongestWordLength.Split_ForLoop(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(Split_ForLoop)} return {result} should {LongestWordLength}");
     }
 
     //[Benchmark]
@@ -97,7 +106,7 @@ public partial class LongestWordLengthBench
         var result = FindLongestWordLength.MemorySplit(Words);
         if (result != LongestWordLength)
             throw new InvalidOperationException(
-                $"{nameof(Split_Linq)} return {result} should {LongestWordLength}");
+                $"{nameof(MemorySplit)} return {result} should {LongestWordLength}");
     }
 
     //[Benchmark]
@@ -137,6 +146,24 @@ public partial class LongestWordLengthBench
     }
 
     //[Benchmark]
+    public void SeqRegexMatch_Linq()
+    {
+        var result = FindLongestWordLength.SeqRegexMatch_Linq(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(SeqRegexMatch_Linq)} return {result} should {LongestWordLength}");
+    }
+
+    //[Benchmark]
+    public void SeqRegexMatch_EachLoop()
+    {
+        var result = FindLongestWordLength.SeqRegexMatch_EachLoop(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(SeqRegexMatch_EachLoop)} return {result} should {LongestWordLength}");
+    }
+
+    //[Benchmark]
     public void ThreeLoops()
     {
         var result = FindLongestWordLength.ThreeLoops(Words);
@@ -154,7 +181,16 @@ public partial class LongestWordLengthBench
                 $"{nameof(TwoLoops)} return {result} should {LongestWordLength}");
     }
 
-    [Benchmark]
+    //[Benchmark]
+    public void RegexMatch_Loop()
+    {
+        var result = FindLongestWordLength.RegexMatch_Loop(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(RegexMatch_Loop)} return {result} should {LongestWordLength}");
+    }
+
+    //[Benchmark]
     public void ThreeLoops1Jump()
     {
         var result = FindLongestWordLength.ThreeLoops1Jump(Words);
@@ -244,6 +280,6 @@ public partial class LongestWordLengthBench
                 $"{nameof(JumpNew)} return {result} should {LongestWordLength}");
     }
 
-    [GeneratedRegex("[^a-zA-Z]+")]
-    private static partial Regex RegexNotAsciiLetters();
+    [GeneratedRegex("[^A-Za-z]+")]
+    private static partial Regex RegexNotAsciiWords();
 }
