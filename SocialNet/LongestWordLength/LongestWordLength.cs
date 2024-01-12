@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace LongestWordLength;
@@ -8,7 +9,9 @@ internal static partial class FindLongestWordLength
 {
     #region Static constants
 
-    private static char[] SplitFastSeparators { get; } = [' ', '.', ','];
+    private static char[] FastSeparators { get; } = [' ', '.', ','];
+    private static SearchValues<char> FastSeparatorsSV { get; } = 
+        SearchValues.Create(FastSeparators);
 
     private static string AsciiLetters { get; } = string.Create(('Z' - 'A' + 1) * 2, 0,
         (span, state) =>
@@ -19,19 +22,19 @@ internal static partial class FindLongestWordLength
                 span[state++] = c;
         });
 
-    private static SearchValues<char> AsciiLettersSearchValues { get; } = SearchValues.Create(AsciiLetters);
+    private static SearchValues<char> AsciiLettersSV { get; } = SearchValues.Create(AsciiLetters);
 
     #endregion
 
     #region Split
 
     public static int Split_Linq(string str)
-        => str.Split(SplitFastSeparators).Max(word => word.Length);
+        => str.Split(FastSeparators).Max(word => word.Length);
 
     public static int Split_EachLoop(string str)
     {
         var maxLength = 0;
-        foreach (var word in str.Split(SplitFastSeparators))
+        foreach (var word in str.Split(FastSeparators))
             maxLength = Math.Max(maxLength, word.Length);
         return maxLength;
     }
@@ -39,7 +42,7 @@ internal static partial class FindLongestWordLength
     public static int Split_ForLoop(string str)
     {
         var maxLength = 0;
-        var words = str.Split(SplitFastSeparators);
+        var words = str.Split(FastSeparators);
         for (var i = 0; i < words.Length; i++)
             maxLength = Math.Max(maxLength, words[i].Length);
         return maxLength;
@@ -65,7 +68,7 @@ internal static partial class FindLongestWordLength
             :  new Range[rangesMaxLength];
         while (true)
         {
-            var count = MemoryExtensions.SplitAny(span, ranges, SplitFastSeparators, 
+            var count = MemoryExtensions.SplitAny(span, ranges, FastSeparators, 
                 StringSplitOptions.RemoveEmptyEntries);
                 //StringSplitOptions.None);
 
@@ -99,6 +102,12 @@ internal static partial class FindLongestWordLength
             maxLength = Math.Max(maxLength, len);
         return maxLength;
     }
+
+    public static int SeqWords_Memory3Loops_Linq(string str)
+        => SeqSplit3Loops(str.AsMemory(), FastSeparators).Max(range => range.End.Value - range.Start.Value);
+
+    public static int SeqWords_Memory3LoopsSV_Linq(string str)
+        => SeqSplit3Loops(str.AsMemory(), FastSeparatorsSV).Max(range => range.End.Value - range.Start.Value);
 
     private static IEnumerable<int> SeqLengths3Loops(string str)
     {
@@ -170,6 +179,58 @@ internal static partial class FindLongestWordLength
         return maxLength;
     }
 
+    private static IEnumerable<Range> SeqSplit3Loops<T>(ReadOnlyMemory<T> memory,
+        ReadOnlyMemory<T> separators) where T : IEquatable<T>
+    {
+        var memoryOffset = 0;
+        while (memory.Length > 0)
+        {
+            var start = memory.Span.IndexOfAnyExcept(separators.Span);
+            if (start < 0)
+                yield break;
+            memory = memory.Slice(start);
+            memoryOffset += start;
+
+            var end = memory.Span.IndexOfAny(separators.Span);
+            if (end < 0)
+            {
+                yield return new Range(memoryOffset, memoryOffset + memory.Length);
+                yield break;
+            }
+
+            yield return new Range(memoryOffset + start, memoryOffset + end);
+
+            memory = memory.Slice(end + 1);
+            memoryOffset += end + 1;
+        }
+    }
+
+    private static IEnumerable<Range> SeqSplit3Loops<T>(ReadOnlyMemory<T> memory,
+        SearchValues<T> separators) where T : IEquatable<T>
+    {
+        var memoryOffset = 0;
+        while (memory.Length > 0)
+        {
+            var start = memory.Span.IndexOfAnyExcept(separators);
+            if (start < 0)
+                yield break;
+            memory = memory.Slice(start);
+            memoryOffset += start;
+
+            var end = memory.Span.IndexOfAny(separators);
+            if (end < 0)
+            {
+                yield return new Range(memoryOffset, memoryOffset + memory.Length);
+                yield break;
+            }
+
+            yield return new Range(memoryOffset + start, memoryOffset + end);
+
+            memory = memory.Slice(end + 1);
+            memoryOffset += end + 1;
+        }
+    }
+
     #endregion
 
     #region Seq2Loops
@@ -195,7 +256,7 @@ internal static partial class FindLongestWordLength
                 //var endIndex = startIndex + 1;
                 //while (endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) endIndex++;
                 var endIndex = startIndex;
-                while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+                    while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
                 yield return endIndex - startIndex;
                 startIndex = endIndex;
             }
@@ -508,10 +569,10 @@ internal static partial class FindLongestWordLength
 
         for (var i = 0; i < str.Length; i++)
         {
-            if (AsciiLettersSearchValues.Contains(str[i]))
+            if (AsciiLettersSV.Contains(str[i]))
             {
                 var startIndex = i;
-                while (++i < str.Length && AsciiLettersSearchValues.Contains(str[i])) ;
+                while (++i < str.Length && AsciiLettersSV.Contains(str[i])) ;
                 maxLength = Math.Max(maxLength, i - startIndex);
             }
         }
@@ -576,7 +637,7 @@ internal static partial class FindLongestWordLength
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void NextIndexes2IndexOfSV(ref ReadOnlySpan<char> span, out int endIndex)
     {
-        var startIndex = span.IndexOfAny(AsciiLettersSearchValues);
+        var startIndex = span.IndexOfAny(AsciiLettersSV);
         if (startIndex < 0)
         {
             span = [];
@@ -585,7 +646,7 @@ internal static partial class FindLongestWordLength
         else
         {
             span = span.Slice(startIndex);
-            endIndex = span.IndexOfAnyExcept(AsciiLettersSearchValues);
+            endIndex = span.IndexOfAnyExcept(AsciiLettersSV);
             if (endIndex < 0)
                 endIndex = span.Length;
         }
@@ -602,12 +663,12 @@ internal static partial class FindLongestWordLength
         ReadOnlySpan<char> span = str;
         while (true)
         {
-            var startIndex = span.IndexOfAny(AsciiLettersSearchValues);
+            var startIndex = span.IndexOfAny(AsciiLettersSV);
             if (startIndex < 0)
                 break;
 
             span = span.Slice(startIndex);
-            var endIndex = span.IndexOfAnyExcept(AsciiLettersSearchValues);
+            var endIndex = span.IndexOfAnyExcept(AsciiLettersSV);
             if (endIndex < 0)
             {
                 maxLength = Math.Max(maxLength, span.Length);
@@ -688,6 +749,21 @@ internal static partial class FindLongestWordLength
             tail = 0;
         }
         return maxLen;
+    }
+
+    #endregion
+
+    #region SearchValues
+
+    public static SearchValues<char> CreateOppositeSearchValues(SearchValues<char> searchValues)
+    {
+        List<char> oppositeChars = [];
+        for (int c = char.MinValue; c <= char.MaxValue; c++)
+        {
+            if (!searchValues.Contains((char)c))
+                oppositeChars.Add((char)c);
+        }
+        return SearchValues.Create(CollectionsMarshal.AsSpan(oppositeChars));
     }
 
     #endregion

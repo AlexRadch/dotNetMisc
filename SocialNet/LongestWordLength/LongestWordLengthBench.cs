@@ -127,7 +127,25 @@ public partial class LongestWordLengthBench
                 $"{nameof(Seq3Loops_Loop)} return {result} should {LongestWordLength}");
     }
 
-    //[Benchmark]
+    [Benchmark]
+    public void SeqWords_Memory3Loops_Linq()
+    {
+        var result = FindLongestWordLength.SeqWords_Memory3Loops_Linq(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(SeqWords_Memory3Loops_Linq)} return {result} should {LongestWordLength}");
+    }
+
+    [Benchmark]
+    public void SeqWords_Memory3LoopsSV_Linq()
+    {
+        var result = FindLongestWordLength.SeqWords_Memory3LoopsSV_Linq(Words);
+        if (result != LongestWordLength)
+            throw new InvalidOperationException(
+                $"{nameof(SeqWords_Memory3LoopsSV_Linq)} return {result} should {LongestWordLength}");
+    }
+
+    [Benchmark]
     public void Seq2Loops_Linq()
     {
         var result = FindLongestWordLength.Seq2Loops_Linq(Words);
@@ -145,7 +163,7 @@ public partial class LongestWordLengthBench
                 $"{nameof(Seq2Loops_Loop)} return {result} should {LongestWordLength}");
     }
 
-    //[Benchmark]
+    [Benchmark]
     public void SeqRegexMatch_Linq()
     {
         var result = FindLongestWordLength.SeqRegexMatch_Linq(Words);
