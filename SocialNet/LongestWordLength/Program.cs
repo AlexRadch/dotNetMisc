@@ -3,15 +3,16 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using LongestWordLength;
 using Perfolizer.Horology;
 
-var config = ManualConfig.Create(DefaultConfig.Instance)
-//var config = new DebugInProcessConfig()
-    //.WithOption(ConfigOptions.JoinSummary, true)
-    .WithOption(ConfigOptions.StopOnFirstError, true)
-    .AddJob(
-        Job.ShortRun.WithIterationTime(TimeInterval.Millisecond * 150)
+BenchmarkRunner.Run<LongestWordLengthBench>(
+    DefaultConfig.Instance
+        .WithOption(ConfigOptions.StopOnFirstError, true)
+        .AddJob(
+            Job.ShortRun
+                .WithToolchain(new InProcessEmitToolchain(true))
+                .WithIterationTime(TimeInterval.FromMilliseconds(150))
         )
-    ;
-
-BenchmarkRunner.Run(typeof(Program).Assembly, config);
+);

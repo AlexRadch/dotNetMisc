@@ -13,16 +13,16 @@ internal static partial class FindLongestWordLength
     private static SearchValues<char> FastSeparatorsSV { get; } = 
         SearchValues.Create(FastSeparators);
 
-    private static string AsciiLetters { get; } = string.Create(('Z' - 'A' + 1) * 2, 0,
-        (span, state) =>
-        {
-            for (var c = 'A'; c <= 'Z'; c++)
-                span[state++] = c;
-            for (var c = 'a'; c <= 'z'; c++)
-                span[state++] = c;
-        });
+    //private static string AsciiLetters { get; } = string.Create(('Z' - 'A' + 1) * 2, 0,
+    //    (span, state) =>
+    //    {
+    //        for (var c = 'A'; c <= 'Z'; c++)
+    //            span[state++] = c;
+    //        for (var c = 'a'; c <= 'z'; c++)
+    //            span[state++] = c;
+    //    });
 
-    private static SearchValues<char> AsciiLettersSV { get; } = SearchValues.Create(AsciiLetters);
+    //private static SearchValues<char> AsciiLettersSV { get; } = SearchValues.Create(AsciiLetters);
 
     #endregion
 
@@ -128,12 +128,12 @@ internal static partial class FindLongestWordLength
         //Console.WriteLine($"NextIndexes2Loops({str.Length}, {startIndex})");
         while (startIndex < str.Length)
         {
-            if (char.IsAsciiLetter(str[startIndex]))
+            if (!FastSeparatorsSV.Contains(str[startIndex]))
             {
                 //endIndex = startIndex + 1;
-                //while (endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) endIndex++;
+                //while (endIndex < str.Length && !FastSeparatorsSV.Contains(str[endIndex])) endIndex++;
                 endIndex = startIndex;
-                while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+                while (++endIndex < str.Length && !FastSeparatorsSV.Contains(str[endIndex])) { }
                 return;
             }
             startIndex++;
@@ -148,7 +148,7 @@ internal static partial class FindLongestWordLength
         var nextIndex = startIndex + maxLength + 1;
         while (nextIndex < str.Length)
         {
-            if (!char.IsAsciiLetter(str[nextIndex]))
+            if (FastSeparatorsSV.Contains(str[nextIndex]))
             {
                 startIndex = nextIndex + 1;
                 goto Continue;
@@ -156,7 +156,7 @@ internal static partial class FindLongestWordLength
 
             for (var newStartIndex = nextIndex - 1; newStartIndex >= startIndex; newStartIndex--)
             {
-                if (!char.IsAsciiLetter(str[newStartIndex]))
+                if (FastSeparatorsSV.Contains(str[newStartIndex]))
                 {
                     startIndex = newStartIndex + 1;
                     goto Continue;
@@ -167,7 +167,7 @@ internal static partial class FindLongestWordLength
             {
                 nextIndex++;
             }
-            while (char.IsAsciiLetter(str[nextIndex]));
+            while (!FastSeparatorsSV.Contains(str[nextIndex]));
 
             startIndex = nextIndex;
             return maxLength;
@@ -251,12 +251,12 @@ internal static partial class FindLongestWordLength
         var startIndex = 0;
         while (startIndex < str.Length)
         {
-            if (char.IsAsciiLetter(str[startIndex]))
+            if (!FastSeparatorsSV.Contains(str[startIndex]))
             {
                 //var endIndex = startIndex + 1;
-                //while (endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) endIndex++;
+                //while (endIndex < str.Length && !FastSeparatorsSV.Contains(str[endIndex])) endIndex++;
                 var endIndex = startIndex;
-                    while (++endIndex < str.Length && char.IsAsciiLetter(str[endIndex])) ;
+                    while (++endIndex < str.Length && !FastSeparatorsSV.Contains(str[endIndex])) ;
                 yield return endIndex - startIndex;
                 startIndex = endIndex;
             }
@@ -310,10 +310,10 @@ internal static partial class FindLongestWordLength
 
         for (var i = 0; i < str.Length; i++)
         {
-            if (char.IsAsciiLetter(str[i]))
+            if (!FastSeparatorsSV.Contains(str[i]))
             {
                 var startIndex = i;
-                while (++i < str.Length && char.IsAsciiLetter(str[i])) ;
+                while (++i < str.Length && !FastSeparatorsSV.Contains(str[i])) ;
                 maxLength = Math.Max(maxLength, i - startIndex);
             }
         }
@@ -336,30 +336,30 @@ internal static partial class FindLongestWordLength
         // Can IndexOf be faster here?
         for (int i = 0, len = str.Length; i < len; i++)
         {
-            if (!char.IsAsciiLetter(str[i]))
+            if (FastSeparatorsSV.Contains(str[i]))
                 continue;
 
             int startIndex = i;
 
         Found:
             // Can IndexOf be faster here?
-            while (++i < len && char.IsAsciiLetter(str[i])) ;
+            while (++i < len && !FastSeparatorsSV.Contains(str[i])) ;
 
             maxLength = i - startIndex;
 
             for (i += maxLength + 1; i < len; i += maxLength + 1)
             {
-                if (!char.IsAsciiLetter(str[i]))
+                if (FastSeparatorsSV.Contains(str[i]))
                     continue;
 
                 // Can IndexOf be faster here?
                 startIndex = i - maxLength;
                 while (--i > startIndex)
                 {
-                    if (!char.IsAsciiLetter(str[i]))
+                    if (FastSeparatorsSV.Contains(str[i]))
                         goto Continue;
                 }
-                if (!char.IsAsciiLetter(str[startIndex]))
+                if (FastSeparatorsSV.Contains(str[startIndex]))
                     startIndex++;
                 
                 i += maxLength;
@@ -382,21 +382,21 @@ internal static partial class FindLongestWordLength
         // Can IndexOf be faster here?
         for (int i = 0, len = str.Length; i < len; i++)
         {
-            if (!char.IsAsciiLetter(str[i]))
+            if (FastSeparatorsSV.Contains(str[i]))
                 continue;
 
             int startIndex = i;
 
         Found:
             // Can IndexOf be faster here?
-            while (++i < len && char.IsAsciiLetter(str[i])) ;
+            while (++i < len && !FastSeparatorsSV.Contains(str[i])) ;
 
             maxLength = i - startIndex;
 
             int checkedIndex = ++i;
             for (i += maxLength; i < len; i += maxLength)
             {
-                if (!char.IsAsciiLetter(str[i]))
+                if (FastSeparatorsSV.Contains(str[i]))
                 {
                     checkedIndex = ++i;
                     continue;
@@ -407,7 +407,7 @@ internal static partial class FindLongestWordLength
                 var checkedIndex2 = i;
                 while (--i > checkedIndex)
                 {
-                    if (!char.IsAsciiLetter(str[i]))
+                    if (FastSeparatorsSV.Contains(str[i]))
                     {
                         checkedIndex = checkedIndex2;
                         i++;
@@ -415,7 +415,7 @@ internal static partial class FindLongestWordLength
                     }
                 }
                 i = startIndex + maxLength;
-                if (!char.IsAsciiLetter(str[startIndex]))
+                if (FastSeparatorsSV.Contains(str[startIndex]))
                     startIndex++;
 
                 goto Found;
@@ -436,7 +436,7 @@ internal static partial class FindLongestWordLength
 
         for (int i = 0, len = str.Length; i < len; i += maxLength + 1)
         {
-            if (!char.IsAsciiLetter(str[i]))
+            if (FastSeparatorsSV.Contains(str[i]))
                 continue;
 
             // Can IndexOf be faster here?
@@ -444,19 +444,19 @@ internal static partial class FindLongestWordLength
             var checkedIndex = i;
             while (--i > startIndex)
             {
-                if (char.IsAsciiLetter(str[i]))
+                if (!FastSeparatorsSV.Contains(str[i]))
                     continue;
 
                 for (i += maxLength + 1; i < len; i += maxLength + 1)
                 {
-                    if (!char.IsAsciiLetter(str[i]))
+                    if (FastSeparatorsSV.Contains(str[i]))
                         goto Continue;
 
                     startIndex = i - maxLength;
                     var checkedIndex2 = i;
                     while (--i > checkedIndex)
                     {
-                        if (!char.IsAsciiLetter(str[i]))
+                        if (FastSeparatorsSV.Contains(str[i]))
                         {
                             checkedIndex = checkedIndex2;
                             goto ContinueChecked;
@@ -472,7 +472,7 @@ internal static partial class FindLongestWordLength
 
                 return maxLength;
             }
-            if (!char.IsAsciiLetter(str[startIndex]))
+            if (FastSeparatorsSV.Contains(str[startIndex]))
             {
                 startIndex++;
             }
@@ -481,7 +481,7 @@ internal static partial class FindLongestWordLength
         Found:
             i += maxLength;
             // Can IndexOf be faster here?
-            while (++i < len && char.IsAsciiLetter(str[i])) ;
+            while (++i < len && !FastSeparatorsSV.Contains(str[i])) ;
 
             maxLength = i - startIndex;
 
@@ -499,20 +499,20 @@ internal static partial class FindLongestWordLength
         // Can IndexOf be faster here?
         for (int i = 0, len = str.Length; i < len; i++)
         {
-            if (!char.IsAsciiLetter(str[i]))
+            if (FastSeparatorsSV.Contains(str[i]))
                 continue;
 
             int startIndex = i;
 
         Found:
             // Can IndexOf be faster here?
-            while (++i < len && char.IsAsciiLetter(str[i])) ;
+            while (++i < len && !FastSeparatorsSV.Contains(str[i])) ;
 
             maxLength = i - startIndex;
 
             for (i += maxLength + 1; i < len; i += maxLength + 1)
             {
-                if (!char.IsAsciiLetter(str[i]))
+                if (FastSeparatorsSV.Contains(str[i]))
                     continue;
 
                 // Can IndexOf be faster here?
@@ -520,12 +520,12 @@ internal static partial class FindLongestWordLength
                 var checkedIndex = i;
                 while (--i > startIndex)
                 {
-                    if (char.IsAsciiLetter(str[i]))
+                    if (!FastSeparatorsSV.Contains(str[i]))
                         continue;
 
                     for (i += maxLength + 1; i < len; i += maxLength + 1)
                     {
-                        if (!char.IsAsciiLetter(str[i]))
+                        if (FastSeparatorsSV.Contains(str[i]))
                             goto Continue;
 
                         // Can IndexOf be faster here?
@@ -533,7 +533,7 @@ internal static partial class FindLongestWordLength
                         var checkedIndex2 = i;
                         while (--i > checkedIndex)
                         {
-                            if (!char.IsAsciiLetter(str[i]))
+                            if (FastSeparatorsSV.Contains(str[i]))
                             {
                                 checkedIndex = checkedIndex2;
                                 goto ContinueChecked;
@@ -549,7 +549,7 @@ internal static partial class FindLongestWordLength
                     return maxLength;
                 }
                 i = startIndex + maxLength;
-                if (!char.IsAsciiLetter(str[startIndex]))
+                if (FastSeparatorsSV.Contains(str[startIndex]))
                     startIndex++;
                 goto Found;
 
@@ -569,10 +569,10 @@ internal static partial class FindLongestWordLength
 
         for (var i = 0; i < str.Length; i++)
         {
-            if (AsciiLettersSV.Contains(str[i]))
+            if (!FastSeparatorsSV.Contains(str[i]))
             {
                 var startIndex = i;
-                while (++i < str.Length && AsciiLettersSV.Contains(str[i])) ;
+                while (++i < str.Length && !FastSeparatorsSV.Contains(str[i])) ;
                 maxLength = Math.Max(maxLength, i - startIndex);
             }
         }
@@ -600,7 +600,7 @@ internal static partial class FindLongestWordLength
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void NextIndexes2IndexOf(ref ReadOnlySpan<char> span, out int endIndex)
     {
-        var startIndex = span.IndexOfAny(AsciiLetters);
+        var startIndex = span.IndexOfAnyExcept(FastSeparators);
         if (startIndex < 0)
         {
             span = [];
@@ -609,7 +609,7 @@ internal static partial class FindLongestWordLength
         else
         {
             span = span.Slice(startIndex);
-            endIndex = span.IndexOfAnyExcept(AsciiLetters);
+            endIndex = span.IndexOfAny(FastSeparators);
             if (endIndex < 0)
                 endIndex = span.Length;
         }
@@ -637,7 +637,7 @@ internal static partial class FindLongestWordLength
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void NextIndexes2IndexOfSV(ref ReadOnlySpan<char> span, out int endIndex)
     {
-        var startIndex = span.IndexOfAny(AsciiLettersSV);
+        var startIndex = span.IndexOfAnyExcept(FastSeparatorsSV);
         if (startIndex < 0)
         {
             span = [];
@@ -646,7 +646,7 @@ internal static partial class FindLongestWordLength
         else
         {
             span = span.Slice(startIndex);
-            endIndex = span.IndexOfAnyExcept(AsciiLettersSV);
+            endIndex = span.IndexOfAny(FastSeparatorsSV);
             if (endIndex < 0)
                 endIndex = span.Length;
         }
@@ -663,12 +663,12 @@ internal static partial class FindLongestWordLength
         ReadOnlySpan<char> span = str;
         while (true)
         {
-            var startIndex = span.IndexOfAny(AsciiLettersSV);
+            var startIndex = span.IndexOfAnyExcept(FastSeparatorsSV);
             if (startIndex < 0)
                 break;
 
             span = span.Slice(startIndex);
-            var endIndex = span.IndexOfAnyExcept(AsciiLettersSV);
+            var endIndex = span.IndexOfAny(FastSeparatorsSV);
             if (endIndex < 0)
             {
                 maxLength = Math.Max(maxLength, span.Length);
@@ -695,16 +695,16 @@ internal static partial class FindLongestWordLength
         {
             int index = i;
             i += maxLen;
-            if (char.IsAsciiLetter(str[i]) && i < len)
+            if (!FastSeparatorsSV.Contains(str[i]) && i < len)
             {
                 int k = maxLen > 0 ? 1 : 0;
                 do i -= k;
-                while (char.IsAsciiLetter(str[i]) && i > index);
+                while (!FastSeparatorsSV.Contains(str[i]) && i > index);
                 if (i == index)
                 {
                     i += maxLen;
                     do i++;
-                    while (char.IsAsciiLetter(str[i]) && i < len);
+                    while (!FastSeparatorsSV.Contains(str[i]) && i < len);
                     if (maxLen < (i - index))
                     {
                         //maxIndex = index;
@@ -724,16 +724,16 @@ internal static partial class FindLongestWordLength
         {
             int index = i;
             i += maxLen;
-            if (char.IsAsciiLetter(str[i]) && i < len)
+            if (!FastSeparatorsSV.Contains(str[i]) && i < len)
             {
                 int k = maxLen > 0 ? 1 : 0;
                 do i -= k;
-                while (char.IsAsciiLetter(str[i]) && i > (index + tail));
+                while (!FastSeparatorsSV.Contains(str[i]) && i > (index + tail));
                 if (i == (index + tail))
                 {
                     i = index + maxLen;
                     do i++;
-                    while (char.IsAsciiLetter(str[i]) && i < len);
+                    while (!FastSeparatorsSV.Contains(str[i]) && i < len);
                     if (maxLen < (i - index))
                     {
                         //maxIndex = index;
