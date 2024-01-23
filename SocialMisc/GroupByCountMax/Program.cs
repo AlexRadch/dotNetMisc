@@ -13,7 +13,8 @@ var sameFirstNamesQ =
     {
         FirstName = sameFirstName.Key,
         Count = sameFirstName.Count(),
-        MaxLastName = sameFirstName.Max(p => p.LastName)
+        MaxLastName = sameFirstName.Max(p => p.LastName),
+        LastNames = string.Join(", ", sameFirstName.Select(p => p.LastName)),
     };
 
 var sameFirstNamesE = people.
@@ -21,13 +22,18 @@ var sameFirstNamesE = people.
     Select(sameFirstName => (
         FirstName: sameFirstName.Key, 
         Count : sameFirstName.Count(), 
-        MaxLastName : sameFirstName.Max(p => p.LastName))
-    );
+        MaxLastName : sameFirstName.Max(p => p.LastName),
+        LastNames: string.Join(", ", sameFirstName.Select(p => p.LastName))
+    ));
 
 Console.WriteLine(sameFirstNamesQ.ToString());
+Console.WriteLine();
 
 foreach (var sameFirstName in sameFirstNamesE)
-    Console.WriteLine($"{sameFirstName.FirstName} Count {sameFirstName.Count} MaxLastName {sameFirstName.MaxLastName}");
+    Console.WriteLine($"{sameFirstName.FirstName} " +
+        $"Count {sameFirstName.Count} " +
+        $"MaxLastName {sameFirstName.MaxLastName} " +
+        $"LastNames ({sameFirstName.LastNames})");
 
 #pragma warning disable CA1050 // Declare types in namespaces
 
